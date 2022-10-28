@@ -1,0 +1,25 @@
+{
+    "API_ID": 12345,
+    "API_HASH": "0123456789abcdef0123456789abcdef",
+
+    "groupIDs": [-100123123123],
+    "userIDs": [123123123, "@BotFather"],
+    "Admin": [12312312312],
+
+    "stickers_list": ["CAACAgIAAxkBAAEFOBNix0V2WwUo7lgb3f075j-qLFF12wACrRsAAnaIgUiSQJVIvcPdfSkE",
+                    "CAACAgIAAxkBAAEFOkhiyLDb8vwQkOfG8XW-yfm8K-LWEgACdgADallyEGpt8XlRpn5kKQQ",
+                    "CAACAgIAAxkBAAEFOkxiyLFo-1T_3U4G0qUN6B5Trv7ESgACWBsAAtzPWUiHXz5LgtsiJikE",
+                    "CAACAgIAAxkBAAEFOk9iyLHUcaJ6V5s7YE-D0dsTt7G0WAACWBcAAkpT0UuJl8K76AokZCkE",
+                    "CAACAgEAAxkBAAEFOlBiyLHUSAw1A70ggFVNSFwfS2uFGgAC2AEAAkVfBy_QP6I8VLwgZikE"],
+
+    "stickers_privet": ["CAACAgIAAxkBAAEFOwRiyL7kllutWcFJnKJrS5GZPSiTvwACORcAAv8ESUrQRnUgNyoQAAEpBA"],
+    "stickers_pm": ["CAACAgIAAxkBAAEFOBNix0V2WwUo7lgb3f075j-qLFF12wACrRsAAnaIgUiSQJVIvcPdfSkE"],
+    "sticker_pong": "CAACAgIAAxkBAAEFPgRiyxwibHZli5Zi8Pa224fnc-vB1AACBBcAAs_q6UvdZbGbN2nnbikE",
+
+    "text_pm": "Ваш текст для ответа в лс здесь",
+
+    "answer_pm": "sticker",
+
+    "time_to_sleep": 0
+
+}
