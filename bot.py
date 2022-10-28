@@ -2,6 +2,7 @@ import asyncio
 import json
 import random
 import time
+import re
 
 from pyrogram import Client, filters
 from pyrogram.errors import FloodWait
@@ -117,13 +118,17 @@ async def remove_group(client, msg):
 @app.on_message(filters.private & ~filters.user(user_ids))
 async def check(client, msg):
     if msg.forward_from is not None:
-        need = "`" + str(msg.forward_from.id) + "`"
-        await msg.reply_text("User ID: " + need, quote=True)
-    elif (msg.forward_from is None) and (msg.from_user.first_name != msg.forward_sender_name) and (msg.forward_sender_name != None) :
-        await msg.reply_text("Forwarder's account is hidden, can't find ID", quote=True)
+        await msg.reply_text(f"User ID: `{msg.forward_from.id}`", quote=True)
+    elif (msg.forward_from is None) and (msg.from_user.first_name != msg.forward_sender_name is not None):
+        await msg.reply_text("Forwarder's account is hidden, can't find an ID", quote=True)
     else:
-        need = "`" + str(msg.from_user.id) + "`"
-        await msg.reply_text("Your User ID: " + need, quote=True)
+        await msg.reply_text(f"Your User ID: `{msg.from_user.id}`", quote=True)
+
+
+# Добавление нового админа другими админами по его ID
+@app.on_message(filters.command("add_admin") & filters.user(admin))
+async def admin(client, msg):
+    print(re.split(" ", msg.text)[1])
 
 
 print("Я заработал")
