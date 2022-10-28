@@ -116,7 +116,6 @@ async def remove_group(client, msg):
 # Нахождение ID человека. Работает в ТОЛЬКО личных сообщениях
 @app.on_message(filters.private & ~filters.user(user_ids))
 async def check(client, msg):
-    print(msg)
     if msg.forward_from is not None:
         need = "`" + str(msg.forward_from.id) + "`"
         await msg.reply_text("User ID: " + need, quote=True)
