@@ -117,10 +117,10 @@ async def remove_group(client, msg):
 @app.on_message(filters.private & ~filters.user(user_ids))
 async def check(client, msg):
     print(msg)
-    if msg.forward_from != None:
+    if msg.forward_from is not None:
         need = "`" + str(msg.forward_from.id) + "`"
         await msg.reply_text("User ID: " + need, quote=True)
-    elif (msg.forward_from == None) and (msg.from_user.first_name != msg.forward_sender_name) and (msg.forward_sender_name != None) :
+    elif (msg.forward_from is None) and (msg.from_user.first_name != msg.forward_sender_name) and (msg.forward_sender_name != None) :
         await msg.reply_text("Forwarder's account is hidden, can't find ID", quote=True)
     else:
         need = "`" + str(msg.from_user.id) + "`"
