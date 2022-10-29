@@ -81,7 +81,7 @@ async def pong(client, msg):
 # Команда на добавление человека в список ПЛОХИШЕЙ. Работает в чате реплаем
 # Работает где угодно реплаем на нужного человека. Доступна только админу(ам)
 @app.on_message(filters.user(admin) & filters.reply & filters.command("add_userID"))
-async def add(client, msg):
+async def add_user(client, msg):
     if msg.reply_to_message.from_user.id not in user_ids:
         await msg.reply_text("User added!")
         config["userIDs"] += [msg.reply_to_message.from_user.id]
@@ -94,7 +94,7 @@ async def add(client, msg):
 # Команда на исколючения человека из списка ПЛОХИШЕЙ
 # Работает где угодно реплаем на нужного человека. Доступна только админу(ам)
 @app.on_message(filters.user(admin) & filters.reply & filters.command("remove_userID"))
-async def delete(client, msg):
+async def remove_user(client, msg):
     if msg.reply_to_message.from_user.id in user_ids:
         await msg.reply_text("User removed!")
         config["userIDs"].remove(msg.reply_to_message.from_user.id)
@@ -130,6 +130,30 @@ async def remove_group(client, msg):
         await msg.reply_text("This group not even in list!")
 
 
+# Добавление нового админа другими админами по его ID или тегу
+@app.on_message(filters.command("add_admin") & filters.user(admin))
+async def add_an_admin(client, msg):
+    try:
+        need = int(re.split(' ', msg.text)[1])
+        # print(re.split(need))   # - Можно раскоментировать для проверки значения ID в консоли
+        if need not in admin:
+            await msg.reply_text("Admin added!")
+            config["Admin"].append(need)
+            with open(cfg_path, 'w') as cfg:
+                json.dump(config, cfg)
+        else:
+            await msg.reply_text("Admin is already added!")
+    except ValueError:
+        need = re.split(' ', msg.text)[1]
+        if need not in admin:
+            await msg.reply_text("Admin added!")
+            config["Admin"] += [need]
+            with open(cfg_path, 'w') as cfg:
+                json.dump(config, cfg)
+        else:
+            await msg.reply_text("Admin is already added!")
+
+
 # Нахождение ID человека. Работает в ТОЛЬКО личных сообщениях
 @app.on_message(filters.private & ~filters.user(user_ids))
 async def check(client, msg):
@@ -139,20 +163,6 @@ async def check(client, msg):
         await msg.reply_text("Forwarder's account is hidden, can't find an ID", quote=True)
     else:
         await msg.reply_text(f"Your User ID: `{msg.from_user.id}`", quote=True)
-
-
-# Добавление нового админа другими админами по его ID
-@app.on_message(filters.command("add_admin") & filters.user(admin))
-async def admin(client, msg):
-    need = re.split(" ", msg.text[1])
-    # print(re.split(need)) - Можно раскоментировать для проверки значения ID в консоли
-    if need not in admin:
-        await msg.reply_text("Admin added!")
-        config["Admin"] += need
-        with open(cfg_path, 'w') as cfg:
-            json.dump(config, cfg)
-    else:
-        await msg.reply_text("Admin is already added!")
 
 
 print("Я заработал")
