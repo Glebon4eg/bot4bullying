@@ -15,8 +15,8 @@ with open(cfg_path, "r") as cfg:
     try:
         config = json.load(cfg)
     except ValueError:
-        print("Некорректно заполнен config.json! Пожалуйста, ознакомтесь с описанием config файла на странице github "
-              "и перепроверьте данные")
+        print("Некорректно заполнен config.json! Пожалуйста, ознакомтесь с описанием и примером config файла на"
+              " странице github и перепроверьте данные")
         exit()
 
 # TODO: добавить проверку на корректность конфига
@@ -80,38 +80,54 @@ async def pong(client, msg):
 
 # Команда на добавление человека в список ПЛОХИШЕЙ. Работает в чате реплаем
 # Работает где угодно реплаем на нужного человека. Доступна только админу(ам)
-@app.on_message(filters.user(admin) & filters.reply & filters.command("add"))
+@app.on_message(filters.user(admin) & filters.reply & filters.command("add_userID"))
 async def add(client, msg):
-    config["userIDs"] += [msg.reply_to_message.from_user.id]
-    with open(cfg_path, 'w') as cfg:
-        json.dump(config, cfg)
+    if msg.reply_to_message.from_user.id not in user_ids:
+        await msg.reply_text("User added!")
+        config["userIDs"] += [msg.reply_to_message.from_user.id]
+        with open(cfg_path, 'w') as cfg:
+            json.dump(config, cfg)
+    else:
+        await msg.reply_text("User is already added!")
 
 
 # Команда на исколючения человека из списка ПЛОХИШЕЙ
 # Работает где угодно реплаем на нужного человека. Доступна только админу(ам)
-@app.on_message(filters.user(admin) & filters.reply & filters.command("remove"))
+@app.on_message(filters.user(admin) & filters.reply & filters.command("remove_userID"))
 async def delete(client, msg):
-    config["userIDs"].remove(msg.reply_to_message.from_user.id)
-    with open(cfg_path, 'w') as cfg:
-        json.dump(config, cfg)
+    if msg.reply_to_message.from_user.id in user_ids:
+        await msg.reply_text("User removed!")
+        config["userIDs"].remove(msg.reply_to_message.from_user.id)
+        with open(cfg_path, 'w') as cfg:
+            json.dump(config, cfg)
+    else:
+        await msg.reply_text("User not even in list!")
 
 
 # Команда на добавление ID группы в список чатов, где бот будет работать
 # Сработает в ТОЛЬКО чате и добавит его ID. Доступна только админу(ам)
 @app.on_message(filters.user(admin) & filters.group & filters.command("add_groupID"))
 async def add_group(client, msg):
-    config["groupIDs"] += [msg.chat.id]
-    with open(cfg_path, 'w') as cfg:
-        json.dump(config, cfg)
+    if msg.chat.id not in group_id:
+        await msg.reply_text("Group added!")
+        config["groupIDs"] += [msg.chat.id]
+        with open(cfg_path, 'w') as cfg:
+            json.dump(config, cfg)
+    else:
+        await msg.reply_text("This group is already added!")
 
 
 # Команда на исключения ID группы из списка чатов, где бот будет работать
 # Сработает в ТОЛЬКО чате и уберет его ID. Доступна только админу(ам)
 @app.on_message(filters.user(admin) & filters.group & filters.command("remove_groupID"))
 async def remove_group(client, msg):
-    config["groupIDs"].remove(msg.chat.id)
-    with open(cfg_path, 'w') as cfg:
-        json.dump(config, cfg)
+    if msg.chat.id in group_id:
+        await msg.reply_text("Group removed!")
+        config["groupIDs"].remove(msg.chat.id)
+        with open(cfg_path, 'w') as cfg:
+            json.dump(config, cfg)
+    else:
+        await msg.reply_text("This group not even in list!")
 
 
 # Нахождение ID человека. Работает в ТОЛЬКО личных сообщениях
@@ -128,7 +144,15 @@ async def check(client, msg):
 # Добавление нового админа другими админами по его ID
 @app.on_message(filters.command("add_admin") & filters.user(admin))
 async def admin(client, msg):
-    print(re.split(" ", msg.text)[1])
+    need = re.split(" ", msg.text[1])
+    # print(re.split(need)) - Можно раскоментировать для проверки значения ID в консоли
+    if need not in admin:
+        await msg.reply_text("Admin added!")
+        config["Admin"] += need
+        with open(cfg_path, 'w') as cfg:
+            json.dump(config, cfg)
+    else:
+        await msg.reply_text("Admin is already added!")
 
 
 print("Я заработал")
