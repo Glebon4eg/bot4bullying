@@ -3,6 +3,8 @@ import json
 import random
 import time
 import re
+import os
+import sys
 
 from pyrogram import Client, filters
 from pyrogram.errors import FloodWait
@@ -34,38 +36,6 @@ admin = config["Admin"]
 
 # Авторизация в боте, два вторых аргумента нужны только при первом запуске
 app = Client("my_account", api_id=config["API_ID"], api_hash=config["API_HASH"])
-
-
-# Отправка нужным людям в нужном чате один из стикеров из stickers_list на ВСЕ их сообщения
-@app.on_message(filters.user(user_ids) & filters.chat(group_id))
-async def doeb_cheloveka(client, msg):
-    try:
-        await msg.reply_sticker(random.choice(config["stickers_list"]))
-        time.sleep(slowmode)
-    except FloodWait as e:
-        await asyncio.sleep(e.value)
-
-
-# Приветсвие новых пользователей
-@app.on_message(filters.new_chat_members & filters.chat(group_id))
-async def privet(client, new_m):
-    try:
-        await new_m.reply_sticker(random.choice(config["stickers_privet"]))
-        time.sleep(slowmode)
-    except FloodWait as e:
-        await asyncio.sleep(e.value)
-
-
-# Ответ в личные сообщения нужным людям
-@app.on_message(filters.user(user_ids) & filters.private)
-async def pm(client, msg):
-    try:
-        if config["answer_pm"] == "sticker":
-            await msg.reply_sticker(random.choice(config["stickers_pm"]))
-        elif config["answer_pm"] == "text":
-            await msg.reply_text(config["text_pm"])
-    except FloodWait as e:
-        await asyncio.sleep(e.value)
 
 
 # Команда /ping
@@ -154,8 +124,47 @@ async def add_an_admin(client, msg):
             await msg.reply_text("Admin is already added!")
 
 
+# Перезагрузка бота командой(после внесения изменений в списки в конфиге самое то)
+@app.on_message(filters.command("restart") & filters.user(admin))
+async def reboot(client, msg):
+    await msg.reply_text("Be right back!")
+    os.execl(sys.executable, sys.executable, *sys.argv)
+
+
+# Отправка нужным людям в нужном чате один из стикеров из stickers_list на ВСЕ их сообщения
+@app.on_message(filters.user(user_ids) & filters.chat(group_id))
+async def doeb_cheloveka(client, msg):
+    try:
+        await msg.reply_sticker(random.choice(config["stickers_list"]))
+        time.sleep(slowmode)
+    except FloodWait as e:
+        await asyncio.sleep(e.value)
+
+
+# Приветсвие новых пользователей
+@app.on_message(filters.new_chat_members & filters.chat(group_id))
+async def privet(client, new_m):
+    try:
+        await new_m.reply_sticker(random.choice(config["stickers_privet"]))
+        time.sleep(slowmode)
+    except FloodWait as e:
+        await asyncio.sleep(e.value)
+
+
+# Ответ в личные сообщения нужным людям
+@app.on_message(filters.user(user_ids) & filters.private)
+async def pm(client, msg):
+    try:
+        if config["answer_pm"] == "sticker":
+            await msg.reply_sticker(random.choice(config["stickers_pm"]))
+        elif config["answer_pm"] == "text":
+            await msg.reply_text(config["text_pm"])
+    except FloodWait as e:
+        await asyncio.sleep(e.value)
+
+
 # Нахождение ID человека. Работает в ТОЛЬКО личных сообщениях
-@app.on_message(filters.private & ~filters.user(user_ids))
+@app.on_message(filters.private & ~filters.user(user_ids) & ~(filters.command("add_admin") & filters.user(admin)))
 async def check(client, msg):
     if msg.forward_from is not None:
         await msg.reply_text(f"User ID: `{msg.forward_from.id}`", quote=True)
