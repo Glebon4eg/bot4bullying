@@ -1,4 +1,5 @@
 {
+  "start_number": 1,
   "API_ID": 12345,
   "API_HASH": "0123456789abcdef0123456789abcdef",
   "groupIDs": [
@@ -26,11 +27,7 @@
     "CAACAgIAAxkBAAEFOBNix0V2WwUo7lgb3f075j-qLFF12wACrRsAAnaIgUiSQJVIvcPdfSkE"
   ],
   "sticker_pong": "CAACAgIAAxkBAAEFPgRiyxwibHZli5Zi8Pa224fnc-vB1AACBBcAAs_q6UvdZbGbN2nnbikE",
-
-    "text_pm": "Ваш текст для ответа в лс здесь",
-
-    "answer_pm": "sticker",
-
-    "time_to_sleep": 0
-
+  "text_pm": "Ваш текст для ответа в лс здесь",
+  "answer_pm": "sticker",
+  "time_to_sleep": 0
 }
