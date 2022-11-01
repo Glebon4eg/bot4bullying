@@ -10,29 +10,39 @@ from pyrogram import Client, filters
 from pyrogram.errors import FloodWait
 from pathlib import Path
 
+
+def restart_bot():
+    os.execl(sys.executable, sys.executable, *sys.argv)
+
+
 cfg_path = Path(__file__).parent / 'config.json'
 
 # Считывание config.json
 with open(cfg_path, "r") as cfg:
     try:
         config = json.load(cfg)
+        if config["start_number"] == 1:
+            config["API_ID"] = int(input("Введите API ID: "))
+            config["API_HASH"] = str(input("Введите API HASH: "))
+            config["start_number"] = 2
+            with open(cfg_path, 'w') as cfg:
+                json.dump(config, cfg, indent=2)
+            restart_bot()
     except ValueError:
         print("Некорректно заполнен config.json! Пожалуйста, ознакомтесь с описанием и примером config файла на"
               " странице github и перепроверьте данные")
         exit()
 
-# TODO: добавить проверку на корректность конфига
-"""
-1) Создать список необходимых ключей
-2) Получить список отсутствующих в конфиге ключей (полезна структура set)
-3) Вызвать ошибку (assert / raise ValueError + вывести сообщение об ошибки вида: 
-    "Ошибка: не хватает вот таких-то ключей")
-"""
-
 slowmode = config["time_to_sleep"]
 group_id = config["groupIDs"]
 user_ids = config["userIDs"]
 admin = config["Admin"]
+
+
+def clear_config():
+    config["groupIDs"] = []
+    config["userIDs"] = []
+
 
 # Авторизация в боте, два вторых аргумента нужны только при первом запуске
 app = Client("my_account", api_id=config["API_ID"], api_hash=config["API_HASH"])
@@ -55,8 +65,9 @@ async def add_user(client, msg):
     if msg.reply_to_message.from_user.id not in user_ids:
         await msg.reply_text("User added!")
         config["userIDs"] += [msg.reply_to_message.from_user.id]
+        print("New user was added: ", msg.reply_to_message.from_user.id)
         with open(cfg_path, 'w') as cfg:
-            json.dump(config, cfg)
+            json.dump(config, cfg, indent=2)
     else:
         await msg.reply_text("User is already added!")
 
@@ -68,8 +79,9 @@ async def remove_user(client, msg):
     if msg.reply_to_message.from_user.id in user_ids:
         await msg.reply_text("User removed!")
         config["userIDs"].remove(msg.reply_to_message.from_user.id)
+        print("User was removed: ", msg.reply_to_message.from_user.id)
         with open(cfg_path, 'w') as cfg:
-            json.dump(config, cfg)
+            json.dump(config, cfg, indent=2)
     else:
         await msg.reply_text("User not even in list!")
 
@@ -81,8 +93,9 @@ async def add_group(client, msg):
     if msg.chat.id not in group_id:
         await msg.reply_text("Group added!")
         config["groupIDs"] += [msg.chat.id]
+        print("New group was added: ", msg.chat.id)
         with open(cfg_path, 'w') as cfg:
-            json.dump(config, cfg)
+            json.dump(config, cfg, indent=2)
     else:
         await msg.reply_text("This group is already added!")
 
@@ -94,8 +107,9 @@ async def remove_group(client, msg):
     if msg.chat.id in group_id:
         await msg.reply_text("Group removed!")
         config["groupIDs"].remove(msg.chat.id)
+        print("Group was removed: ", msg.chat.id)
         with open(cfg_path, 'w') as cfg:
-            json.dump(config, cfg)
+            json.dump(config, cfg, indent=2)
     else:
         await msg.reply_text("This group not even in list!")
 
@@ -109,26 +123,29 @@ async def add_an_admin(client, msg):
         if need not in admin:
             await msg.reply_text("Admin added!")
             config["Admin"].append(need)
+            print("New admin was added ", need)
             with open(cfg_path, 'w') as cfg:
-                json.dump(config, cfg)
+                json.dump(config, cfg, indent=2)
         else:
-            await msg.reply_text("Admin is already added!")
+            await msg.reply_text("Admin is already added!", quote=True)
     except ValueError:
         need = re.split(' ', msg.text)[1]
         if need not in admin:
             await msg.reply_text("Admin added!")
             config["Admin"] += [need]
+            print("New admin was added", need)
             with open(cfg_path, 'w') as cfg:
-                json.dump(config, cfg)
+                json.dump(config, cfg, indent=2)
         else:
-            await msg.reply_text("Admin is already added!")
+            await msg.reply_text("Admin is already added!", quote=True)
 
 
-# Перезагрузка бота командой(после внесения изменений в списки в конфиге самое то)
+# Перезагрузка бота командой(после внесения изменений в списках в конфиге самое то)
+# Доступна только админу(ам)
 @app.on_message(filters.command("restart") & filters.user(admin))
 async def reboot(client, msg):
-    await msg.reply_text("Be right back!")
-    os.execl(sys.executable, sys.executable, *sys.argv)
+    await msg.reply_text("Be right back!", quote=True)
+    restart_bot()
 
 
 # Отправка нужным людям в нужном чате один из стикеров из stickers_list на ВСЕ их сообщения
@@ -156,9 +173,9 @@ async def privet(client, new_m):
 async def pm(client, msg):
     try:
         if config["answer_pm"] == "sticker":
-            await msg.reply_sticker(random.choice(config["stickers_pm"]))
+            await msg.reply_sticker(random.choice(config["stickers_pm"]), quote=True)
         elif config["answer_pm"] == "text":
-            await msg.reply_text(config["text_pm"])
+            await msg.reply_text(config["text_pm"], quote=True)
     except FloodWait as e:
         await asyncio.sleep(e.value)
 
@@ -174,5 +191,19 @@ async def check(client, msg):
         await msg.reply_text(f"Your User ID: `{msg.from_user.id}`", quote=True)
 
 
-print("Я заработал")
+print("I am alive!")
+
+if config["start_number"] == 2:
+    first_admin = input("Введите свой @username или ID(его можно узнать у @useridinfobot) для добавления его в список "
+                        "админов и дальнейшей настройки бота: ")
+    try:
+        config["Admin"] = [int(first_admin)]
+    except ValueError:
+        config["Admin"] = [str(first_admin)]
+    config["start_number"] = 3
+    clear_config()
+    with open(cfg_path, 'w') as cfg:
+        json.dump(config, cfg, indent=2)
+    restart_bot()
+
 app.run()
